@@ -10,7 +10,7 @@ class ZebraController < ApplicationController
   def squareone
     render template: "new_square_calc"
   end
-  
+
   def squaretwo
     render template: "square_results"
   end
@@ -31,13 +31,19 @@ class ZebraController < ApplicationController
 
   def paymenttwo
     apr = params[:apr].to_f / 100 / 12
-  years = params[:years].to_i
-  principal = params[:principal].to_f
-  months = years * 12
+    years = params[:years].to_i
+    principal = params[:principal].to_f
+    months = years * 12
 
-  @monthly_payment = (principal * apr) / (1 - (1 + apr)**-months)
-  @formatted_payment = sprintf('%.2f', @monthly_payment)
-  @formatted_apr = (params[:apr].to_f).round(4).to_s + '%' # Format APR as percentage
+    # Ensure no division by zero if APR is zero
+    if apr.zero?
+      @monthly_payment = principal / months
+    else
+      @monthly_payment = (principal * apr) / (1 - (1 + apr)**-months)
+    end
+    
+    @formatted_payment = sprintf('%.2f', @monthly_payment)
+    @formatted_apr = "#{params[:apr].to_f.round(4)}%" # Format APR as percentage
 
     render template: "payment_result"
   end
@@ -48,9 +54,12 @@ class ZebraController < ApplicationController
 
   def randomtwo
     min = params[:minimum].to_f
-  max = params[:maximum].to_f
-  random_number = rand(min..max)
+    max = params[:maximum].to_f
+    if min < max
+      @random_number = rand(min..max)
+    else
+      @random_number = "Invalid range"
+    end
     render template: "random_result"
   end
-
 end
